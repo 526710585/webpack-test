@@ -1,0 +1,17 @@
+{
+    "scripts": {
+        "build": "webpack --mode production --progress",
+        "all": "npx babel src --out-file script-compiled.js"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.12.1",
+        "@babel/core": "^7.12.3",
+        "@babel/preset-env": "^7.12.1",
+        "babel-loader": "^8.1.0",
+        "webpack": "^5.4.0",
+        "webpack-cli": "^4.2.0"
+    },
+    "dependencies": {
+        "@babel/plugin-transform-runtime": "^7.12.1"
+    }
+}
