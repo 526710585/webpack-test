@@ -1,37 +1,37 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
 
-    mode: "production",
+  mode: "production",
 
-    entry: ['./src/index.js'],
+  entry: ["./src/index.js"],
 
-    output: {
+  output: {
 
-        path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, "dist"),
 
-        filename: '[name].js'
+    filename: "[name].js"
 
-    },
+  },
 
-    module: {
+  module: {
 
-        rules: [{
+    rules: [{
 
-            test: /\.js$/,
+      test: /\.js$/,
 
-            include: [
+      include: [
 
-                path.resolve(__dirname, 'src')
+        path.resolve(__dirname, "src")
 
-            ],
+      ],
 
-            exclude: /(node_modules|bower_components)/,
+      exclude: /(node_modules|bower_components)/,
 
-            loader: "babel-loader",
+      loader: "babel-loader",
 
-        }]
+    }]
 
-    }
+  }
 
-}
+};
