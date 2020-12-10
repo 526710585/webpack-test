@@ -184,7 +184,11 @@ npm install --save-dev eslint
 ```
 
 ```
-npm install --save eslint-friendly-formatter eslint-loader
+npm install --save eslint-loader
+```
+
+```shell
+eslint-friendly-formatter 
 ```
 
 eslint-friendly-formatter 可以让eslint的错误信息出现在终端上
@@ -192,8 +196,6 @@ eslint-friendly-formatter 可以让eslint的错误信息出现在终端上
 @babel/eslint-parser 用于允许你使用 ESLint 校验所有 babel code  
 
 > babel-eslint 不再维护和更新
-
-
 
 
 
@@ -207,9 +209,23 @@ eslint-friendly-formatter 可以让eslint的错误信息出现在终端上
       use: ['eslint-loader'],
       enforce: 'pre',//编译前检查
       include: [path.resolve(__dirname, 'src')],//指定检查目标
-      options: { // 这里的配置项参数将会被传递到 eslint 的 CLIEngine 
-                    formatter: require('eslint-friendly-formatter') // 指定错误报告的格式规范
-                }
+    }],
+  },
+```
+
+如果想要有eslint-friendly-formatter就要更改use为loader的写法
+
+```js
+  module: {
+    rules: [{
+      test: /\.js$/,
+      exclude: [/node_modules/],
+      loader: 'eslint-loader',
+      enforce: 'pre', // 编译前检查
+      include: [path.resolve(__dirname, 'src')], // 指定检查目标
+      options: { // 这里的配置项参数将会被传递到 eslint 的 CLIEngine
+        formatter: require('eslint-friendly-formatter'), // 指定错误报告的格式规范
+      },
     }],
   },
 ```
@@ -222,7 +238,7 @@ npx eslint --init //初始化  选择如何配置eslint 之后会生成配置文
 
 
 
-也可以直接新建一个文件夹
+也可以直接新建一个文件
 
 ```js
 module.exports = {
@@ -343,6 +359,20 @@ extends: 'eslint:standard',
 ```shell
 npm install --save-dev eslint-plugin-html
 ```
+
+##### plugins的目的
+
+解决loader无法实现的其他事
+
+##### 与eslint-loader的区别
+
+eslint-loader：只在加载文件时才会被启用
+
+plugins：会主动寻找目标文件，在webpack启动的同时发挥作用
+
+
+
+
 
 这个插件将会提醒模块脚本之间模拟浏览器共享全局变量的行为，因为这不适用于模块脚本。
 
