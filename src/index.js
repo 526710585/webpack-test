@@ -1,7 +1,7 @@
-const arr = [1,2,3];
+let array = [1, 2, 3, 4, 5, 6];
+array.includes(item => item > 2);
+new Promise()
 
-arr.includes(item=>item>2);
-
-class Person {};
-
-// Promise.resolve().finally();
+async function a(){
+    console.log(1);
+}
