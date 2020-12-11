@@ -89,18 +89,12 @@ module.exports = {
 
 
 
-
-
 ```shell
 npm install --save-dev @babel/core babel-loader @babel/preset-env @babel/cli babel-loader @babel/plugin-transform-runtime
 
 ```
 
-
-
-**@babel/core** 是最基础的2个依赖，结合使用可以把js代码解析成AST，传给plugins，然后再反解析会来编译结果
-
-**@babel/preset-env** 是babel plugins的预设，它能根据配置，很智能的配置需要的plugins
+**1.@babel/core** 是最基础的2个依赖，结合使用可以把js代码解析成AST，传给plugins，然后再反解析会来编译结果
 
 **@babel/cli**是babel自带的命令行集成工具，常见的api进行了如下。
 
@@ -130,6 +124,16 @@ npm install --save-dev @babel/core babel-loader @babel/preset-env @babel/cli bab
 | --no-copy-ignored | 不拷贝忽略文件 | npx babel src --out-dir lib --copy-files --no-copy-ignored   |
 | --no-babelrc      | 忽略.babelrc   | npx babel --no-babelrc script.js --out-file script-compiled.js --presets=es2015,react |
 
+
+
+**@babel/preset-env** 是babel plugins的预设，它能根据配置，很智能的配置需要的plugins
+
+> 这是因为babel 把 Javascript 语法为syntax 和 api， api 指那些我们可以通过 函数重新覆盖的语法 ，类似 includes， map， includes， Promise， 凡是我们能想到重写的都可以归属到api。syntax 指像箭头函数，let，const，class， 依赖注入 Decorators等等这些，我们在 Javascript在运行是无法重写的，想象下，在不支持的浏览器里不管怎么样，你都用不了 let 这个关键字。
+
+@babel/presets默认只对syntax进行转换，我们需要使用@babel/polyfill来提供对api的的支持。
+
+
+
 **babel-loader**  loader 让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解
  JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack的打包能力，对它们进行处理。虽然webpack本身就能够处理`.js文件`，但无法对ES2015+的语法进行转换，babel-loader的作用正是实现对使用了ES2015+语法的`.js`文件进行处理。
 
@@ -143,6 +147,8 @@ npm install --save-dev @babel/core babel-loader @babel/preset-env @babel/cli bab
 吧babel 转义出来的require 
 
 helpers 从之前的原地定义改为了从一个统一的模块中引入，使得打包的结果中每个 helper 只会存在一个，解决了第二个问题
+
+
 
 
 
@@ -448,5 +454,7 @@ parser: 'babel-eslint',
 
 
 ## vue 如何配置 ESLint(修改parse)
+
+**使用eslint-plugin-vue插件**
 
 ## babel 如何配置eslint(修改parse)
