@@ -360,17 +360,7 @@ extends: 'eslint:standard',
 npm install --save-dev eslint-plugin-html
 ```
 
-##### plugins的目的
-
-解决loader无法实现的其他事
-
-##### 与eslint-loader的区别
-
-eslint-loader：只在加载文件时才会被启用
-
-plugins：会主动寻找目标文件，在webpack启动的同时发挥作用
-
-
+通过这个插件你可以让eslint去检测html文件script标签里的js代码
 
 
 
@@ -408,6 +398,10 @@ settings: {
 在开发中针对不同的情况我们要使用不同的解析器，而我们常用的就是 `babel-eslint` 。
 
 #### parser（指定解析器）
+
+ESLint 会对我们的代码进行校验，而 parser 的作用是将我们写的代码转换为 [ESTree](https://link.zhihu.com/?target=https%3A//github.com/estree/estree)，ESLint 会对 ESTree 进行校验。
+
+
 
 `babel-eslint` 解析器是一种使用频率很高的解析器，因为现在很多公司的很多项目目前都使用了es6，为了兼容性考虑基本都使用babel插件对代码进行编译。而用babel编译后的代码使用 `babel-eslint` 这款解析器可以避免不必要的麻烦。
 
