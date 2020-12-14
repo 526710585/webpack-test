@@ -90,7 +90,7 @@ module.exports = {
 
 
 ```shell
-npm install --save-dev @babel/core babel-loader @babel/preset-env @babel/cli babel-loader @babel/plugin-transform-runtime
+npm install --save-dev @babel/core babel-loader @babel/preset-env @babel/cli @babel/plugin-transform-runtime
 
 ```
 
@@ -126,27 +126,26 @@ npm install --save-dev @babel/core babel-loader @babel/preset-env @babel/cli bab
 
 
 
-**@babel/preset-env** 是babel plugins的预设，它能根据配置，很智能的配置需要的plugins
+**2.babel-loader**  loader 让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解
+ JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack的打包能力，对它们进行处理。虽然webpack本身就能够处理`.js文件`，但无法对ES2015+的语法进行转换，babel-loader的作用正是实现对使用了ES2015+语法的`.js`文件进行处理。
+
+
+
+##### 3.**@babel/polyfill** 模块包括 `core-js` 和一个自定义的 `regenerator runtime` 模块，可以模拟完整的 ES2015+ 环境（不包含第4阶段前的提议）。
+
+**补充说明 (2020/01/07)：**V7.4.0 版本开始，`@babel/polyfill` 已经被废弃(前端发展日新月异)，需单独安装 `core-js` 和 `regenerator-runtime` 模块。
+
+不推荐使用
+
+
+
+**4.@babel/preset-env** 是babel plugins的预设，它能根据配置，很智能的配置需要的plugins
 
 > 这是因为babel 把 Javascript 语法为syntax 和 api， api 指那些我们可以通过 函数重新覆盖的语法 ，类似 includes， map， includes， Promise， 凡是我们能想到重写的都可以归属到api。syntax 指像箭头函数，let，const，class， 依赖注入 Decorators等等这些，我们在 Javascript在运行是无法重写的，想象下，在不支持的浏览器里不管怎么样，你都用不了 let 这个关键字。
 
 @babel/presets默认只对syntax进行转换，我们需要使用@babel/polyfill来提供对api的的支持。
 
-
-
-**babel-loader**  loader 让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解
- JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack的打包能力，对它们进行处理。虽然webpack本身就能够处理`.js文件`，但无法对ES2015+的语法进行转换，babel-loader的作用正是实现对使用了ES2015+语法的`.js`文件进行处理。
-
-**@babel/plugin-transform-runtime **babel 转义 async 语法会使用regeneratorRuntime 这个变量 但是这个变量在最终的代码里未定义会报错 babel 在转译的时候，会将源代码分成 syntax 和 api 两部分来处理：
-
-- syntax：类似于展开对象、optional chain、let、const 等语法
-- api：类似于 [1,2,3].includes 等函数、方法
-
-@babel/plugin-transform-runtime的作用就是
-
-吧babel 转义出来的require 
-
-helpers 从之前的原地定义改为了从一个统一的模块中引入，使得打包的结果中每个 helper 只会存在一个，解决了第二个问题
+@babel/preset-env` 提供了一个 `useBuiltIns` 参数，设置值为 `usage` 时，就只会包含代码需要的 `polyfill` 。有一点需要注意：配置此参数的值为 `usage` ，必须要同时设置 `corejs
 
 
 
@@ -156,7 +155,7 @@ helpers 从之前的原地定义改为了从一个统一的模块中引入，使
 npm install core-js@3 --save
 ```
 
-**core-js@3**   阅读并查阅babel官方文档以后发现原来在`Babel 7.4.0`以后，`@babel/polyfill`这个包就会被移除了。官方叫我们直接使用`core-js`来代替`@babel/polyfill`的作用
+**5.core-js@3**   阅读并查阅babel官方文档以后发现原来在`Babel 7.4.0`以后，`@babel/polyfill`这个包就会被移除了。官方叫我们直接使用`core-js`来代替`@babel/polyfill`的作用
 
 修改配置
 
@@ -174,6 +173,135 @@ npm install core-js@3 --save
         ]
     ],
 ```
+
+targets配置的意思就是让babel根据你写入的兼容平台来做代码转换，这里我们指定ie10为我们要兼容的最低版本
+
+```json
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "chrome": "58",
+          "ie": "10"
+        },
+        "useBuiltIns": "usage",
+        "corejs": { "version": 3, "proposals": true }
+      }
+    ]
+  ]
+}
+```
+
+
+
+**6.@babel/plugin-transform-runtime **
+
+是一个可以重复使用 `Babel` 注入的帮助程序，以节省代码大小的插件 。babel 转义 async 语法会使用regeneratorRuntime 这个变量 但是这个变量在最终的代码里未定义会报错 babel 在转译的时候，会将源代码分成 syntax 和 api 两部分来处理：
+
+- syntax：类似于展开对象、optional chain、let、const 等语法
+- api：类似于 [1,2,3].includes 等函数、方法
+
+@babel/plugin-transform-runtime的作用就是
+
+吧babel 转义出来的require 
+
+helpers 从之前的原地定义改为了从一个统一的模块中引入，使得打包的结果中每个 helper 只会存在一个，解决了第二个问题
+
+
+
+另外，`@babel/plugin-transform-runtime` 需要和 `@babel/runtime` 配合使用。
+
+首先安装依赖，`@babel/plugin-transform-runtime` 通常仅在开发时使用，但是运行时最终代码需要依赖 `@babel/runtime`，所以 `@babel/runtime` 必须要作为生产依赖被安装，如下 :
+
+```shell
+npm install --save-dev @babel/plugin-transform-runtime
+npm install --save @babel/runtime
+```
+
+
+
+```json
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "chrome": "58",
+          "ie": "10"
+        },
+        "useBuiltIns": "usage",
+        "corejs": { "version": 3, "proposals": true }
+      }
+    ]
+  ],
+    //添加配置
+  "plugins": [
+    "@babel/plugin-transform-runtime"
+  ]
+}
+```
+
+
+
+如果我们希望 `@babel/plugin-transform-runtime` 不仅仅处理帮助函数，同时也能加载 `polyfill` 的话，我们需要给 `@babel/plugin-transform-runtime` 增加配置信息。
+
+首先新增依赖 `@babel/runtime-corejs3`:
+
+```shell
+npm install @babel/runtime-corejs3 --save
+```
+
+修改配置文件如下(移除了 `@babel/preset-env` 的 `useBuiltIns` 的配置，不然不就重复了嘛嘛嘛，不信的话，你用 `async/await` 编译下试试咯):
+
+```js
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "chrome": "58",
+          "ie": "10"
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    [
+        "@babel/plugin-transform-runtime",{
+            "corejs": 3
+        }
+    ]
+]
+}
+```
+
+这样引入的polyfill 没有直接去修改 `Array.prototype`，或者是新增 `Promise` 方法
+
+给 `@babel/plugin-transform-runtime` 配置 `corejs` 是如此的完美，既可以将帮助函数变成引用的形式，又可以动态引入 `polyfill`，并且不会污染全局环境。何必要给 `@babel/preset-env` 提供 `useBuiltIns` 功能呢，看起来似乎不需要呀。
+
+带着这样的疑问，我新建了几个文件(内容简单且基本一致，使用了些新特性)，然后使用 `webpack` 构建，以下是我对比的数据:
+
+| 序号 | .babelrc 配置                                                | webpack mode production |
+| :--- | :----------------------------------------------------------- | :---------------------- |
+| 0    | 不使用 `@babel/plugin-transform-runtime`                     | 36KB                    |
+| 1    | 使用`@babel/plugin-transform-runtime`，并配置参数 `corejs`: 3。不会污染全局环境 | 37KB                    |
+| 2    | 使用`@babel/plugin-transform-runtime`，不配置 `corejs`       | 22KB                    |
+
+我猜测是 `@babel/runtime-corejs3/XXX` 的包本身比 `core-js/modules/XXX` 要大一些~
+
+
+
+
+
+**总结：**babel7的版本下，利用present-env做按需转换，利用useBuiltIn做babel-polyfill的按需引入，利用transform-runtime做babel辅助函数的按需引入。
+
+
+
+
 
 
 
@@ -451,7 +579,31 @@ parser: 'babel-eslint',
 }
 ```
 
+要在配置文件中配置全局变量，请将 `globals` 配置属性设置为一个对象，该对象包含以你希望使用的每个全局变量。对于每个全局变量键，将对应的值设置为 `"writable"` 以允许重写变量，或 `"readonly"` 不允许重写变量。例如：
 
+```
+{
+    "globals": {
+        "var1": "writable",
+        "var2": "readonly"
+    }
+}
+```
+
+可以使用字符串 `"off"` 禁用全局变量。例如，在大多数 ES2015 全局变量可用但 `Promise` 不可用的环境中，你可以使用以下配置:
+
+```
+{
+    "env": {
+        "es6": true
+    },
+    "globals": {
+        "Promise": "off"
+    }
+}
+```
+
+由于历史原因，布尔值 `false` 和字符串值 `"readable"` 等价于 `"readonly"`。类似地，布尔值 `true` 和字符串值 `"writeable"` 等价于 `"writable"`。但是，不建议使用旧值。
 
 ## vue 如何配置 ESLint(修改parse)
 
