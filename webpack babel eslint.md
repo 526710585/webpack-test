@@ -1,5 +1,9 @@
 
 
+
+
+
+
 # webpack babel eslint
 
 
@@ -610,3 +614,145 @@ parser: 'babel-eslint',
 **使用eslint-plugin-vue插件**
 
 ## babel 如何配置eslint(修改parse)
+
+
+
+
+
+## 4.安装部分图片资源处理的loader
+
+`.png`等后缀的引入文件webpack压根不认识你，所以我们需要安装相应的loader也就是`file-loader`来处理这种文件，给webpack**赋能**
+
+安装
+
+```ruby
+$ npm install file-loader --save-dev
+```
+
+ 在`webpack.config.js`中配置它
+
+```javascript
+ module: {
+    rules: [
+      // ...
+      {
+        // 使用file-loader处理文件
+        test: /\.(png|svg|jpg|gif)$/,
+        use: ["file-loader"]
+      }
+    ]
+  }
+```
+
+`file-loader`很强大，像`.xml`文件啊，`.csv`、字体文件`.ttf`等等它都能处理，可是对于处理图片来说，可能我们有更好的选择
+
+
+
+先安装`url-loader`：
+
+```ruby
+$ npm install url-loader --save-dev
+```
+
+修改配置
+
+```js
+      {
+        // 使用url-loader处理图片资源，当图片size小于limit值时会转为DataURL
+        test: /\.(png|jpg|gif)$/i,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              limit: 8192
+            }
+          }
+        ]
+      },
+      {
+        // 使用url-loader处理字体
+        test: /\.(ttf|svg|eot|woff|woff2)$/i,
+        use:'url-loader'
+      }
+```
+
+注意:url-loader是依赖于file-loader处理图片的,当图片大小小于limit url-loader会处理成base64,如果超过 则会交给file-loader处理文件
+
+
+
+## 4.安装部分CSS\SASS处理的loader
+
+```ruby
+$ npm install sass-loader node-sass --save-dev
+```
+
+`webpack`中`loader`加载顺序是**从下到上，从右到左**。
+
+`css-loader`使你能够使用类似`@import`和`url(...)`的方法实现`require/import`的功能；`style-loader`可以将编译完成的css挂载到html中。
+
+这两个loader还有许多的配置项可以学习参考，大家可以去下面给的链接去了解。
+
+- 然后我们需要在`webpack.config.js`中配置它。
+
+```javascript
+ // 处理sass
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader" // 将 Sass 编译成 CSS，默认使用 Node Sass
+        ]
+      },
+    ]
+  }
+```
+
+如果运行有错 是因为 node-sass 有问题 可以  用Dart Sass 替换 Node Sass
+
+```shell
+yarn remove node-sass
+
+yarn add sass -D
+```
+
+### 安装postcss
+
+新建一个`postcss.config.js`文件并配置添加这个刚刚安装的`autoprefixer`插件。
+
+```js
+module.exports = {
+  plugins: {
+    "autoprefixer": {}
+  }
+};
+```
+
+
+
+加入postcss-loader配置
+
+```
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          "style-loader",
+          "css-loader",
+         "postcss-loader", // 因为这里处理的是css文件，所以要放在sass-loader的上面
+          "sass-loader"
+        ]
+      },
+```
+
+- 到了这一步，基本配置就完成了，但是还有一个东西一定要记得设置，不然压根没效果。进入到`package.json`中，我们要设置**所支持的浏览器列表**，切记！！！（这一步很重要，我就是忘记设置这一步，导致一直没效果，找了很久的问题！！！）
+
+```bash
+{
+...
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ]
+...
+```
+
