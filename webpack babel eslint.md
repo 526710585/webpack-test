@@ -831,3 +831,103 @@ module.exports = {
 - 配置`sorcemap`有很多的可选值，但是不用管这么多，开发模式中我们设置为`inline-source-map`或者`source-map`，生产模式中我们将其设置为`cheap-module-source-map`即可，react和vue都是这么设置的。作为一名新手，模仿是最有效的学习方式了。
 - `entry`算是比较简单，但是`output`今天文章中提及的只是冰山一角，后面根据需求再设置，下面参考链接也可以去详细了解下它的一些配置项。
 
+
+
+## 6.plugins的使用
+
+
+
+- 什么是`webpack`的[plugins](https://links.jianshu.com/go?to=https%3A%2F%2Fwebpack.js.org%2Fconcepts%2Fplugins%2F)？首先回顾一下前面几章讲`webpack`的`loaders`相关概念时，我将它理解为一个**赋能**的概念，各种各样的`loader`为`webpack`提供了处理不同文件的能力，使`webpack`变得更强大了。
+- 而`webpack`的`plugins`，则可以把它理解为类似于框架的**生命周期(钩子/函数)**，比如可以在页面`mounted`的时候做些事情、在页面`show`的时候做些事情，离开页面`destroyed`的时候做些事情等等。同理，`plugins`也可以让我们在`webpack`打包过程中的不同阶段来做些事情。
+
+
+
+### CleanWebpackPlugin
+
+- 使用`CleanWebpackPlugin`这个插件可以帮我们自动删除`dist`文件，安装：
+
+```ruby
+ npm install clean-webpack-plugin --save-dev
+```
+
+- 在`webpack.config.js`中引入并配置它。
+
+```javascript
++  const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const path = require("path");
+
+module.exports = {
+    mode: "development",
+    devtool: "inline-source-map",
+    entry: {
+       main: "./src/index.js"
+    },
+    output: {
+       filename: "[name].bundle.js",
+       path: path.resolve(__dirname, "dist")
+    },
++   plugins: [
++      new CleanWebpackPlugin()
++   ],
+    ...
+}
+```
+
+### HtmlWebpackPlugin
+
+```ruby
+npm install html-webpack-plugin --save-dev
+```
+
+- 在webpack.config.js中配置添加一下：
+
+```javascript
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
++  const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const path = require("path");
+
+module.exports = {
+    mode: "development",
+    devtool: "inline-source-map",
+    entry: {
+       main: "./src/index.js"
+    },
+    output: {
+       filename: "[name].bundle.js",
+       path: path.resolve(__dirname, "dist")
+    },
+    plugins: [
+       new CleanWebpackPlugin(),
++      // 可以为你生成一个HTML文件
++      new HtmlWebpackPlugin()
+    ],
+    ...
+}
+```
+
+当我们这么简单的添加一行后，开始打包，这个插件会为我们做两件事情：
+
+- 在`dist`目录下生成一个`index.html`文件；
+- 自动帮我们引入`main.bundle.js`文件;
+
+
+
+这个`html-webpack-plugin`插件还有一些的基本的常见配置，我们可传个对象给它配置些东西。
+
+- 设置这个`template`就是说，打包后我不要它自动给我生成一个html文件，我指定一个模板，你照着这个模板把`main.bundle.js`文件引入就行。
+- 设置`title`就是测试一下，`<%= htmlWebpackPlugin.options %>`可以读取`htmlWebpackPlugin`中定义的配置参数。
+- inject 配置就是说插入JS到html中的body 
+- 还可以自定义配置项 needVconsole 用于在html中识别不同的条件
+
+
+
+```
+    new HtmlWebpackPlugin({
+      template : './public/index.html',
+      inject:'body',
+      title:config.build.title,
+      needVconsole:false
+    })
+```
+
