@@ -931,3 +931,103 @@ module.exports = {
     })
 ```
 
+
+
+## 7.配置webpack-dev-server
+
+webpack-dev-server是webpack官方提供的一个小型Express服务器。使用它可以为webpack打包生成的资源文件提供web服务。
+
+**注意：你启动webpack-dev-server后，你在目标文件夹中是看不到编译后的文件的,实时编译后的文件都保存到了内存当中。因此很多同学使用webpack-dev-server进行开发的时候都看不到编译后的文件**
+
+#### 1.webpack-dev-server 主要提供两个功能：
+
+1.为静态文件提供web服务
+
+2.自动刷新和热替换(HMR)
+
+自动刷新指当修改代码时webpack会进行自动编译，更新网页内容
+
+热替换指运行时更新各种模块，即局部刷新
+
+#### 2.安装webpack-dev-server
+
+```shell
+yarn add --save-dev webpack-dev-server
+```
+
+**注意:**
+
+本人安装的时候
+
+  "webpack-dev-server": "^3.11.0"的版本只能搭配   "webpack-cli": "3"使用   "webpack-cli 4"使用会报错. 所以吧把"webpack-cli"卸载之后安装了3的版本即可运行.
+
+#### 3.配置webpack.config.js文件
+
+
+
+```js
+devServer:{
+   contentBase: path.join(__dirname, './'),// 设置服务器的基本目录
+   host:'localhost', // 服务器的ip
+   port: 80,// 端口
+   open: true,// 自动打开页面
+}
+```
+
+#### 4.配置package.json文件
+
+```js
+  "scripts": {
+    "build": "webpack  --config ./build/webpack.prod.config.js --mode production --progress",
+    "babel": "npx babel ./src/index.js --out-file ./babel_build/babel.js",
+    "dev": "webpack-dev-server --config ./build/webpack.dev.config.js --inline --hot"
+  },
+```
+
+--inline: webpack-dev-server 的自动打包.  在inline mod 会在控制台展示打包进度
+
+--hot:热更新刷新页面
+
+其他配置
+
+```
+--quiet 控制台中不输出打包的信息
+--compress 开启gzip压缩
+--progress 显示打包的进度
+```
+
+#### 5.配合plugins使用webpack-dev-server
+
+添加HtmlWebpackPlugin帮助我们选用静态页面并引入打包后的js
+
+**webpack.config.js**
+
+```
+  plugins: [
+    //HTML文件
+    new HtmlWebpackPlugin({
+      template : './public/index.html',
+      inject:'body',
+      title:config.build.title,
+      needVconsole:process.env.NODE_ENV !== 'production'
+    })
+  ],
+```
+
+
+
+#### 注意点:
+
+webpack5版本下必须要添加一条webpack.config.js配置才能更改代码后成功自动刷新页面
+
+```js
+  //webpack5版本下新增配置
+  target: "web",
+  //webpack-dev-server配置
+  devServer: {
+   contentBase: path.join(__dirname, './'),
+   port: 80,
+   open: true,
+  },
+```
+
