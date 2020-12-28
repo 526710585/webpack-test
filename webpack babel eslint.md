@@ -47,8 +47,10 @@ module.exports = {
   output: {
 
     path: path.resolve(__dirname, "dist"),
+    
+    chunkFilename: './js/[name].chunk.js',
 
-    filename: "[name].js"
+    filename: './js/[name].js',
 
   },
   module: {}
@@ -950,4 +952,423 @@ module.exports = {
       needVconsole:false
     })
 ```
+
+
+
+## 7.配置webpack-dev-server
+
+webpack-dev-server是webpack官方提供的一个小型Express服务器。使用它可以为webpack打包生成的资源文件提供web服务。
+
+**注意：你启动webpack-dev-server后，你在目标文件夹中是看不到编译后的文件的,实时编译后的文件都保存到了内存当中。因此很多同学使用webpack-dev-server进行开发的时候都看不到编译后的文件**
+
+#### 1.webpack-dev-server 主要提供两个功能：
+
+1.为静态文件提供web服务
+
+2.自动刷新和热替换(HMR)
+
+自动刷新指当修改代码时webpack会进行自动编译，更新网页内容
+
+热替换指运行时更新各种模块，即局部刷新
+
+#### 2.安装webpack-dev-server
+
+```shell
+yarn add --save-dev webpack-dev-server
+```
+
+**注意:**
+
+本人安装的时候
+
+  "webpack-dev-server": "^3.11.0"的版本只能搭配   "webpack-cli": "3"使用   "webpack-cli 4"使用会报错. 所以吧把"webpack-cli"卸载之后安装了3的版本即可运行.
+
+#### 3.配置webpack.config.js文件
+
+
+
+```js
+devServer:{
+   contentBase: path.join(__dirname, './'),// 设置服务器的基本目录
+   host:'localhost', // 服务器的ip
+   port: 80,// 端口
+   open: true,// 自动打开页面
+}
+```
+
+#### 4.配置package.json文件
+
+```js
+  "scripts": {
+    "build": "webpack  --config ./build/webpack.prod.config.js --mode production --progress",
+    "babel": "npx babel ./src/index.js --out-file ./babel_build/babel.js",
+    "dev": "webpack-dev-server --config ./build/webpack.dev.config.js --inline --hot"
+  },
+```
+
+--inline: webpack-dev-server 的自动打包.  在inline mod 会在控制台展示打包进度
+
+--hot:热更新刷新页面
+
+其他配置
+
+```
+--quiet 控制台中不输出打包的信息
+--compress 开启gzip压缩
+--progress 显示打包的进度
+```
+
+#### 5.配合plugins使用webpack-dev-server
+
+添加HtmlWebpackPlugin帮助我们选用静态页面并引入打包后的js
+
+**webpack.config.js**
+
+```
+  plugins: [
+    //HTML文件
+    new HtmlWebpackPlugin({
+      template : './public/index.html',
+      inject:'body',
+      title:config.build.title,
+      needVconsole:process.env.NODE_ENV !== 'production'
+    })
+  ],
+```
+
+
+
+#### 注意点:
+
+webpack5版本下必须要添加一条webpack.config.js配置才能更改代码后成功自动刷新页面
+
+```js
+  //webpack5版本下新增配置
+  target: "web",
+  //webpack-dev-server配置
+  devServer: {
+   contentBase: path.join(__dirname, './'),
+   port: 80,
+   open: true,
+  },
+```
+
+## 配置proxy代理请求
+
+在 **webpack.config.js**中配置
+
+```js
+  devServer: {
+    contentBase: path.join(__dirname, './'),
+    host:'localhost',
+    port: 80,
+    proxy: {
+      "/test": {
+        target: "https://op.tga.qq.com/test",
+        pathRewrite: {"^/test": "/"},
+        secure: true,
+        changeOrigin: true,
+      },
+      "/build": {
+        target: "https://op.tga.qq.com",
+        pathRewrite: {"^/build": "/"},
+        secure: true,
+        changeOrigin: true,
+      }
+    }
+  },
+```
+
+
+
+- `target`：把带有`/test`的接口代理到请求`target`设置的这个服务器，就相对于请求`https://op.tga.qq.com/test`
+- `pathRewrite`：可以把请求接口中的某部分重写，
+  - 上面这个只是为了演示这个属性，`^/test`是个正则，把所有`/test`开头的都重写`/`，我们axios接口里本来就是以这个开头的，所相当于啥事没干，单纯演示。
+  - 你可以改`pathRewrite: { "/movie": "/music" }`，把请求电影的的改为请求音乐的；还有一种比较在axios封装中比较常见的就是`pathRewrite: { "^/api": "/" }`，把所有以`/api`开头的就这串字符都删掉。
+- `secure`：允许`https`协议。
+- `changeOrigin`：设置为ture表示允许跨域。
+
+## 代码分割
+
+- 而`webpack`可以帮我们轻松的实现[代码分割](https://links.jianshu.com/go?to=https%3A%2F%2Fwebpack.js.org%2Fguides%2Fcode-splitting%2F)，我们进入到`webpack.config.js`中，添加如下几行配置：
+
+
+
+```javascript
+module.exports = {
+  mode: "development",
+  entry: {
+    main: "./src/index.js"
+  },
+  output: {
+    filename: "[name].bundle.js",
+    path: path.resolve(__dirname, "dist")
+  },
+
+  // 代码分割codeSpliting
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+      minSize: 20000,
+    }
+  },
+  // ...
+};
+```
+
+- 这个配置是个什么意思？就是说对于公共引用的模块（库）帮我单独提出来做下代码分割。
+
+
+
+#### SplitChunksPlugin
+
+- 上面`webpack`帮我们实现代码分割，利用的就是[SplitChunksPlugin](https://links.jianshu.com/go?to=https%3A%2F%2Fwebpack.js.org%2Fguides%2Fcode-splitting%2F%23splitchunksplugin)这个插件，这个可配置的内容就很丰富了，只拿几个常见的选项来举例一下。
+- 当我们什么都不做，仅仅只是配置`splitChunks: {}`,其实就是默认相当于：
+
+
+
+```javascript
+module.exports = {
+  // ...
+  optimization: {
+    splitChunks: {}
+  }
+  // 等同于：
+  optimization: {
+    splitChunks: {
+      chunks: 'async',
+      minSize: 30000,
+      minRemainingSize: 0,
+      maxSize: 0,
+      minChunks: 1,
+      maxAsyncRequests: 6,
+      maxInitialRequests: 4,
+      automaticNameDelimiter: '~',
+      automaticNameMaxLength: 30,
+      cacheGroups: {
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    }
+  },
+  // ...
+};
+```
+
+- 这其中通过去看文档可以得到更好的理解，我这里也写不了这么多，只举几个：
+- `chunks`：这里默认值为`async`，只有在异步引入模块的时候才会做分割，所以前面例子中我们将其设置为`all`，这样同步异步的引入都会自动的做代码分割了。
+- `minSize`：就是说引入的文件多大才会做分割，在`src/index.js`中`import`引入的`header.js`、`content.js`等不满足这个条件，所以就没有分割了。
+- `minChunks`：我们以引入`axios`为例啊，这个就是说最小的引入次数，默认为1，如果你一次都没有，肯定就不会做代码分割了。
+- `cacheGroups`：
+  - 当你上面所有的条件（minSize、chunks、minChunks等等）都满足了以后，首先就会进入的这个`defaultVendors`里面，里面会test校检，像我们的`axios`引入就是来自`node_modules`包里的，所以就满足就会做分割，打包后为`dist/vendors~main.bundle.js`文件，不满足就走下面的`default`，我们打包后的文件名也可以通过配置一个`filename`来改变名字。
+  - 那为什么叫`缓存组`呢？再举一个例子，比如我们在`src/index.js`中`import`引入的`header.js`、`content.js`、`foooter.js`这三个文件，当对`header.js`做代码分割的时候，走进`cacheGroups`中满足default选项，这时候会打包进去并缓存起来，当`content.js`进来发现也满足这个条件，所以也会把它丢进去，以此类推，最后打包完成了作为一个文件输出到dist文件中。
+
+
+
+## prefetching和preloading
+
+- `preloading`：设置这个指令，就会在当前的页面中，以较高优先级预加载某个资源。其实就相当于浏览器的预加载，但是浏览器的预加载只会加载html中声明的资源，但是`preloading`突破了这个限制，连css和js资源也可以预加载一波。
+
+- `Prefetching`：设置这个指令，就表示允许浏览器在后台（空闲时）获取将来可能用得到的资源，并且将他们存储在浏览器的缓存中。
+
+- 这两种其实都是webpack提供的资源加载优化的方式，反正如果就是设置了这几个指令，就会先走个`http`的缓存，然后下次再次请求的时候直接从缓存里面拿，这样就节省了加载的时间。
+
+#### 写法
+
+**这里就是在点击body的时候的去引入footer.js** 
+
+只有事件触发才会引入footer.js
+
+```js
+document.body.addEventListener("click", () => {
+  import(./footer.js").then(module => {
+    console.log(module);
+    module.createFooter();
+  });
+});
+```
+
+
+
+**这里就是Prefetch的去引入footer.js**
+
+我们再次刷新浏览器打开控制台你就会看到，我们没有点击页面的时候它就会帮我自动先加载一遍`footer.js`，然后当我们点击页面动态加载的时候，就是直接走的缓存了。
+
+```js
+document.body.addEventListener("click", () => {
+  import(/* webpackPrefetch: true */"./footer.js").then(module => {
+    console.log(module);
+    module.createFooter();
+  });
+});
+```
+
+
+
+
+
+**这里就是Preload的去引入footer.js**
+
+```js
+document.body.addEventListener("click", () => {
+  import(/* webpackPreload: true */"./footer.js").then(module => {
+    console.log(module);
+    module.createFooter();
+  });
+});
+```
+
+#### 小结
+
+- 其实webpack官网对于这两个东西的解释我觉得就比较到位了，`Preloading`什么时候用呢？比如说，你页面中的很多组件都用到了`jQuery`，比较**强依赖**这个东西，那么我们就可以当import引入jQuery库的时候设置为`Preloading`，让他预加载一波。
+- 而`Prefetching`我们一般用的比较多，也比较好理解，用官网的例子来说：一般当我们进入一个网站首页，只有当点击登录按钮的时候模态框才需要弹出来，那么我们就可以对这个`login模态框`组件做下`Prefetching`，当首页加载完毕，浏览器空闲的时候提前加载一下，这样当用户点击登录按钮就可以直接从缓存里面加载这个组件了。
+
+
+
+## CSS切割和publicPath的分别设置和CSS压缩
+
+#### 1、开始
+
+webpack打包默认会把css写入JS中 , 这样加大了JS文件的大小  . 我们可以使用MiniCssExtractPlugin切割出css
+
+```shell
+yarn add mini-css-extract-plugin --save-dev 
+```
+
+#### 2、配置
+
+推荐直接在 **webpack.prod.config** 中配置MiniCssExtractPlugin 因为只有生产环境才需要切割css
+
+我们要用MiniCssExtractPlugin.loader代替style-loader
+
+```js
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'production',
+  module: {
+    rules: [{
+      test: /\.s[ac]ss$/,
+      use: [
+          //替换style-loader
+        {
+          loader: MiniCssExtractPlugin.loader,
+          options:{
+            //注意需要修改publicPath 因为我们吧img配置到了img文件夹中 否则他会是默认的publicPath
+            publicPath: '../'
+         }
+        },
+        {
+          loader: 'css-loader',
+          options: {
+            importLoaders: 2
+          }
+        },
+        'sass-loader',
+        'postcss-loader'
+      ]
+    }, {
+      test: /\.css$/,
+      use: [
+       //替换style-loader
+        {
+          loader: MiniCssExtractPlugin.loader,
+          options:{
+            publicPath: '../'
+        }
+        },
+        'css-loader',
+        'postcss-loader'
+      ]
+    }]
+  },
+  plugins: [
+    new CleanWebpackPlugin(),
+      //plugins中启用MiniCssExtractPlugin
+    new MiniCssExtractPlugin({
+        //这边配置输出文件
+      filename: 'style/style.css',
+    })
+  ],
+
+})
+
+module.exports = webpackConfig
+```
+
+为了使用MiniCssExtractPlugin我们需要**修改webpack.base.config.js**中的publicPath
+
+```js
+  output: {
+    path: config.build.assetsRoot,
+    chunkFilename: 'js/[name].chunk.js',//依赖的放置文件夹 例:axios
+    filename: 'js/[name].js',//src中的js放置
+    publicPath: './',//必须要是./
+  },
+```
+
+而我们devServer启动服务中 **修改webpack.dev.config.j**s中的publicPath
+
+```js
+  output: {
+    publicPath: '/',//设置为/ 表示根目录
+  },
+```
+
+然后我们吧*url-loader处理字体和图片的输出路径都改一下*
+
+**修改webpack.base.config.js**
+
+```js
+        // 使用url-loader处理图片资源，当图片size小于limit值时会转为DataURL
+        test: /\.(jpg|bmp|png|jpeg|gif|tiff)$/,
+        use: [{
+          loader: "url-loader",
+          options: {
+            limit: 8192,
+            outputPath: "img",//图片的输出路径
+          }
+        }]
+      },
+      {
+        // 使用url-loader处理字体
+        test:/.(woff|woff2|eot|ttf|otf|TTF|svg).*?$/,
+        use: [{
+          loader: "url-loader",
+          options: {
+            outputPath: "font",//字体的输出路径
+          }
+        }]
+      },
+```
+
+#### CSS压缩
+
+**在webpack.prod.config.js中添加配置**
+
+```js
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+
+optimization: {//优化项
+    minimizer: [ new OptimizeCSSAssetsPlugin({})],
+  },
+```
+
+
+
+OK一切收工之后 ,这样我们的dist目录下文件大概为
+
+- 图片输出在img文件夹
+- 字体输出在font文件夹
+- css会分离出来在style文件夹 并且dist目录下会被压缩
+- js会放在js文件夹中
+
+并且serverDev和dist都可以看到这些图片和css
 
