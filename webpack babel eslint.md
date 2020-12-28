@@ -619,6 +619,26 @@ parser: 'babel-eslint',
 
 
 
+#### 配置过程中出现的问题(当解析vue文件的时候)
+
+出现错误：Use the latest vue-eslint-parser。
+
+**解决方法：** 把`parser: "babel-eslint"`移动到parserOptions中。
+
+```
+{
+  //parser: "babel-eslint",
+  parserOptions: {
+    parser: "babel-eslint",
+    //...
+  }
+}
+```
+
+**问题原因：** `eslint-plugin-vue`中的很多规则都需要`vue-eslint-parser`检查`<template>`, `vue-eslint-parser`和`babel-parser`二者有冲突。
+
+
+
 ## 4.安装部分图片资源处理的loader
 
 `.png`等后缀的引入文件webpack压根不认识你，所以我们需要安装相应的loader也就是`file-loader`来处理这种文件，给webpack**赋能**
