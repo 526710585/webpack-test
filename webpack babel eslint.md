@@ -1372,3 +1372,50 @@ OK一切收工之后 ,这样我们的dist目录下文件大概为
 
 并且serverDev和dist都可以看到这些图片和css
 
+
+
+
+
+# 记录一下问题
+
+1.在想创建一个根目录的eslint配置的前提下 : 如果想在vscode中让eslint插件自动识别需要注意以下两点
+
+- eslint配置中的extends最好使用 官方的包 或者是 使用`path`模块提供绝对路径
+
+  ```js
+    extends: [
+      path.join(__dirname, './scripts/eslint-rules/base.js'),
+      path.join(__dirname, './scripts/eslint-rules/import.js'),
+    ],
+  ```
+
+- 在根目录中需要一个package.json提供eslint检测需要的包 并安装
+
+  ```json
+  {
+    "name": "permanent_wzry",
+    "version": "1.0.0",
+    "devDependencies": {
+      "@babel/cli": "^7.12.10",
+      "@babel/core": "^7.12.10",
+      "@babel/plugin-transform-runtime": "^7.12.10",
+      "@babel/preset-env": "^7.12.11",
+      "@babel/runtime": "^7.12.5",
+      "babel-eslint": "^10.1.0",
+      "eslint": "^7.16.0",
+      "eslint-friendly-formatter": "^4.0.1",
+      "eslint-loader": "^4.0.2",
+      "eslint-plugin-html": "^6.1.1",
+      "eslint-plugin-import": "^2.22.1",
+      "eslint-plugin-promise": "^4.2.1",
+      "eslint-plugin-vue": "^7.2.0",
+      "stylelint": "^13.8.0",
+      "stylelint-order": "^4.1.0",
+      "stylelint-scss": "^3.18.0"
+    }
+  }
+  
+  ```
+
+  
+
