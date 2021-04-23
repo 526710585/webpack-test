@@ -349,6 +349,7 @@ eslint-friendly-formatter 可以让eslint的错误信息出现在终端上
       use: ['eslint-loader'],
       enforce: 'pre',//编译前检查
       include: [path.resolve(__dirname, 'src')],//指定检查目标
+        
     }],
   },
 ```
@@ -369,6 +370,31 @@ eslint-friendly-formatter 可以让eslint的错误信息出现在终端上
     }],
   },
 ```
+
+其他有用的options配置
+
+        fix: true,//自动修复
+        emitWarning: true,//全部改为警告 不影响打包
+        emitError: true,//全部改为报错 会打断打包
+```js
+  module: {
+    rules: [{
+      test: /\.js$/,
+      exclude: [/node_modules/],
+      loader: 'eslint-loader',
+      enforce: 'pre', // 编译前检查
+      include: [path.resolve(__dirname, 'src')], // 指定检查目标
+      options: { // 这里的配置项参数将会被传递到 eslint 的 CLIEngine
+        formatter: require('eslint-friendly-formatter'), // 指定错误报告的格式规范
+        emitError: true,//全部改为报错 会打断打包
+      },
+    }],
+  },
+```
+
+
+
+
 
 3.创建一个.eslintrc.js配置
 
