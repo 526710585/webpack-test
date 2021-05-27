@@ -967,6 +967,7 @@ module.exports = {
 - 设置`title`就是测试一下，`<%= htmlWebpackPlugin.options %>`可以读取`htmlWebpackPlugin`中定义的配置参数。
 - inject 配置就是说插入JS到html中的body 
 - 还可以自定义配置项 needVconsole 用于在html中识别不同的条件
+- hash属性可以 打包的css和js文件就会自动带上hash值 ==>src="style.css?b55gfdd745"
 
 
 
@@ -975,7 +976,8 @@ module.exports = {
       template : './public/index.html',
       inject:'body',
       title:config.build.title,
-      needVconsole:false
+      needVconsole:false,
+      hash:true
     })
 ```
 
