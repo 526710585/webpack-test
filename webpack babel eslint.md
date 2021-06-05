@@ -1446,4 +1446,20 @@ OK一切收工之后 ,这样我们的dist目录下文件大概为
   ```
 
   
+  
+  2.使用babel去解决在vue-cli中使用commonjs 语法的问题(使用module.exports导出 使用require引入)
+  
+  ```
+  yarn add @babel/plugin-transform-modules-commonjs -D
+  ```
+  
+  3.
+  
+  
+
+
+
+
+
+
 
