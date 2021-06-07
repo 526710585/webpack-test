@@ -1453,6 +1453,16 @@ OK一切收工之后 ,这样我们的dist目录下文件大概为
   yarn add @babel/plugin-transform-modules-commonjs -D
   ```
   
+  babel.config.js中添加配置
+  
+  ```js
+  {
+    "plugins": ["@babel/plugin-transform-modules-commonjs"]
+  }
+  ```
+  
+  
+  
   3.
   
   
