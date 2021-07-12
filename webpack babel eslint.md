@@ -202,6 +202,32 @@ targets配置的意思就是让babel根据你写入的兼容平台来做代码�
 
 
 
+**到目前为止我们的配置还存在两问题：**
+
+1.污染全局变量及其原型
+
+babel对于Array.from 等静态方法，直接在 global.Array 上添加；对于例如 includes 等实例方法，直接在 global.Array.prototype 上添加。这样直接修改了全局变量的原型，有可能会带来意想不到的问题。这个问题在开发第三方库的时候尤其重要，因为我们开发的第三方库修改了全局变量，有可能和另一个也修改了全局变量的第三方库发生冲突，或者和使用我们的第三方库的使用者发生冲突。公认的较好的编程范式中，也不鼓励直接修改全局变量、全局变量原型。
+
+```js
+import 'core-js/modules/es.array.includes.js';
+//直接引入了这个includes
+```
+
+如果使用打包工具转换这里的代码就是直接给Array的原型链上挂载includes方法
+
+
+
+2.重复的helpers引入次数过多
+
+babel 转译 syntax 时，有时候会使用一些辅助的函数来帮忙转 ，
+class 语法中，babel 自定义了 _classCallCheck这个函数来辅助；typeof 则是直接重写了一遍，自定义了 _typeof 这个函数来辅助。这些函数叫做 helpers。
+
+如果一个项目中有100个文件，其中每个文件都写了一个 class，那么这个项目最终打包的产物里就会存在100个 _classCallCheck 函数
+
+
+
+
+
 **6.@babel/plugin-transform-runtime **
 
 是一个可以重复使用 `Babel` 注入的帮助程序，以节省代码大小的插件 。babel 转义 async 语法会使用regeneratorRuntime 这个变量 但是这个变量在最终的代码里未定义会报错 babel 在转译的时候，会将源代码分成 syntax 和 api 两部分来处理：
@@ -211,9 +237,9 @@ targets配置的意思就是让babel根据你写入的兼容平台来做代码�
 
 @babel/plugin-transform-runtime的作用就是
 
-吧babel 转义出来的require 
+1.防止babel直接修改全局变量(这在库的构建中十分重要)
 
-helpers 从之前的原地定义改为了从一个统一的模块中引入，使得打包的结果中每个 helper 只会存在一个，解决了第二个问题
+2.helpers 从之前的原地定义改为了从一个统一的模块中引入。
 
 
 
@@ -252,7 +278,11 @@ npm install --save @babel/runtime
 
 
 
+**还有一个问题：该插件默认假设所有可填充 API 将由用户提供。否则需要指定[`corejs`](https://www.babeljs.cn/docs/babel-plugin-transform-runtime#corejs)这个选项!**
+
 如果我们希望 `@babel/plugin-transform-runtime` 不仅仅处理帮助函数，同时也能加载 `polyfill` 的话，我们需要给 `@babel/plugin-transform-runtime` 增加配置信息。
+
+请注意，`corejs: 2`仅支持全局变量（例如`Promise`）和静态属性（例如`Array.from`），同时`corejs: 3`还支持实例属性（例如`[].includes`）。这里我们使用corejs:3的选项。
 
 首先新增依赖 `@babel/runtime-corejs3`:
 
@@ -269,7 +299,6 @@ npm install @babel/runtime-corejs3 --save
       "@babel/preset-env",
       {
         "targets": {
-          "chrome": "58",
           "ie": "10"
         }
       }
