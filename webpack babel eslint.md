@@ -241,6 +241,8 @@ class 语法中，babel 自定义了 _classCallCheck这个函数来辅助；type
 
 2.helpers 从之前的原地定义改为了从一个统一的模块中引入。
 
+@babel/plugin-transform-runtime 的作用是将 helper 和 polyfill 都改为从一个统一的地方引入，并且引入的对象和全局变量是完全隔离的，这样解决了上面的两个问题。
+
 
 
 另外，`@babel/plugin-transform-runtime` 需要和 `@babel/runtime` 配合使用。
